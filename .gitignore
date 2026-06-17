@@ -24,3 +24,6 @@ dist/
 
 # OS
 .DS_Store
+
+# Game data (large — import locally with src/importer.py)
+data/games/*.json
