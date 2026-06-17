@@ -73,7 +73,7 @@ This means: move a pawn to the e4 square. No piece letter needed — if there's 
    ├────┼────┼────┼────┼────┼────┼────┼────┤
  5 │    │    │    │    │    │    │    │    │
    ├────┼────┼────┼────┼────┼────┼────┼────┤
- 4 │    │    │    │ ★  │    │    │    │    │  ← e4 (pawn lands here)
+ 4 │    │    │    │    │ ★  │    │    │    │  ← e4 (pawn lands here)
    ├────┼────┼────┼────┼────┼────┼────┼────┤
  3 │    │    │    │    │    │    │    │    │
    ├────┼────┼────┼────┼────┼────┼────┼────┤
@@ -89,7 +89,7 @@ This means: move a pawn to the e4 square. No piece letter needed — if there's 
 Nf3
 ```
 
-This means: move the **N**ight to the **f3** square.
+This means: move the **K**night to the **f3** square.
 
 ```
      a    b    c    d    e    f    g    h
@@ -100,7 +100,7 @@ This means: move the **N**ight to the **f3** square.
    ├────┼────┼────┼────┼────┼────┼────┼────┤
  2 │    │    │    │    │ P  │    │    │    │
    ├────┼────┼────┼────┼────┼────┼────┼────┤
- 1 │    │ N  │    │    │    │    │    │    │  ← g1 (knight started here)
+ 1 │    │    │    │    │    │    │ N  │    │  ← g1 (knight started here)
    └────┴────┴────┴────┴────┴────┴────┴────┘
 ```
 
@@ -174,26 +174,26 @@ exd5   → a pawn from the e-file captures on d5
 Moves are listed in pairs — **White's move first, then Black's** — with a move number before each pair:
 
 ```
-1. e4 e5   2. Nf3 Nf6   3. Bc4 Bc5
+1. e4 e5   2. Nf3 Nc6   3. Bc4 Bc5
 ```
 
 Reading this out loud:
 - Move 1: White plays e4, Black plays e5
-- Move 2: White plays Nf3, Black plays Nf6
+- Move 2: White plays Nf3, Black plays Nc6
 - Move 3: White plays Bc4, Black plays Bc5
 
 This is the **Italian Game** — one of the most common openings.
 
-### What the board looks like after 1. e4 e5 2. Nf3 Nf6 3. Bc4:
+### What the board looks like after 1. e4 e5 2. Nf3 Nc6 3. Bc4:
 
 ```
      a    b    c    d    e    f    g    h
    ┌────┬────┬────┬────┬────┬────┬────┬────┐
- 8 │ r  │ n  │ b  │ q  │ k  │ b  │    │ r  │
+ 8 │ r  │    │ b  │ q  │ k  │ b  │ n  │ r  │
    ├────┼────┼────┼────┼────┼────┼────┼────┤
  7 │ p  │ p  │ p  │ p  │    │ p  │ p  │ p  │
    ├────┼────┼────┼────┼────┼────┼────┼────┤
- 6 │    │    │    │    │ n  │    │    │    │  ← black knight on f6
+ 6 │    │    │ n  │    │    │    │    │    │  ← black knight on c6
    ├────┼────┼────┼────┼────┼────┼────┼────┤
  5 │    │    │    │    │ p  │    │    │    │  ← black pawn on e5
    ├────┼────┼────┼────┼────┼────┼────┼────┤
