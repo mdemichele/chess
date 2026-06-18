@@ -36,6 +36,7 @@ python3 -m src.opening_analysis "Petrovs Defense" --depth 12
 - `docs/chess_notation_guide.md` — visual guide to reading chess notation, with ASCII board diagrams
 - `docs/openings_guide.md` — overview of 13 common openings drawn from real game history, all positions machine-verified
 - `docs/italian_game_guide.md` — in-depth guide to the Italian Game covering the Giuoco Piano, Two Knights Defense, Evans Gambit, and strategic plans for both sides
+- `docs/scholars_mate_guide.md` — guide to the Scholar's Mate (2.Qh5), how the four-move checkmate works, and how to defend against it as Black
 
 ---
 
