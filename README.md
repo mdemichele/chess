@@ -23,6 +23,16 @@ python3 -m src.stats --time-class rapid
 python3 -m src.stats --since 2025-06
 ```
 
+### Game Analyzer (Stockfish)
+Analyzes a specific game move-by-move using Stockfish, identifying blunders, mistakes, and inaccuracies and showing the best alternative for each error.
+
+```bash
+python3 -m src.analyzer https://www.chess.com/game/live/12345
+python3 -m src.analyzer https://www.chess.com/game/live/12345 --time 0.5   # slower = stronger
+```
+
+The game must already be downloaded locally (run the importer first). Requires Stockfish: `brew install stockfish`.
+
 ### Opening Analyzer
 Builds a move-by-move win rate tree for any opening, showing where your results diverge based on which continuation you choose.
 
@@ -147,7 +157,7 @@ Change `USERNAME = "mattydem"` in `src/importer.py` and `src/stats.py` to use yo
 
 ## Roadmap
 
-- [ ] Stockfish integration for blunder/mistake detection
+- [x] Stockfish integration for blunder/mistake detection
 - [ ] Tactical pattern recognition
 - [ ] Endgame training modules
 - [ ] Opening repertoire builder
