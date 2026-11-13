@@ -60,6 +60,80 @@ def classify(cp_loss: int) -> str | None:
     return None
 
 
+def analyze_game(pgn_str: str, username: str, sf_path: str, time_per_move: float) -> dict | None:
+    """
+    Evaluates every position in the game once and returns structured results.
+
+    Each entry in "moves" covers one ply. Evals are centipawns from White's
+    perspective; "s1"/"s2" are the evals before/after the move.
+    """
+    game = chess.pgn.read_game(io.StringIO(pgn_str))
+    if not game:
+        return None
+
+    white_name = game.headers.get("White", "?")
+    black_name = game.headers.get("Black", "?")
+    user_color = chess.WHITE if white_name.lower() == username.lower() else chess.BLACK
+
+    engine = chess.engine.SimpleEngine.popen_uci(sf_path)
+    board = game.board()
+    moves = list(game.mainline_moves())
+
+    def evaluate() -> tuple[int, chess.Move | None]:
+        if board.is_game_over():
+            outcome = board.outcome()
+            if outcome.winner is None:
+                return 0, None
+            return (10000 if outcome.winner == chess.WHITE else -10000), None
+        info = engine.analyse(board, chess.engine.Limit(time=time_per_move))
+        pv = info.get("pv", [])
+        return info["score"].white().score(mate_score=10000), (pv[0] if pv else None)
+
+    try:
+        start_fen = board.fen()
+        evals = []
+        # Each position is evaluated once: the eval after a move is the eval before the next
+        s1, best = evaluate()
+        for i, move in enumerate(moves):
+            turn = board.turn
+            best_san = board.san(best) if best else "?"
+            best_uci = best.uci() if best else None
+            actual_san = board.san(move)
+            board.push(move)
+            s2, next_best = evaluate()
+
+            # cp_loss from the mover's perspective (positive = mover lost advantage)
+            cp_loss = (s1 - s2) if turn == chess.WHITE else (s2 - s1)
+            move_num = i // 2 + 1
+            evals.append({
+                "ply": i + 1,
+                "label": f"{move_num}. {actual_san}" if turn == chess.WHITE else f"{move_num}... {actual_san}",
+                "color": "white" if turn == chess.WHITE else "black",
+                "is_user": turn == user_color,
+                "actual": actual_san,
+                "uci": move.uci(),
+                "best": best_san,
+                "best_uci": best_uci,
+                "cp_loss": cp_loss,
+                "classification": classify(cp_loss),
+                "s1": s1,
+                "s2": s2,
+                "fen": board.fen(),
+            })
+            s1, best = s2, next_best
+    finally:
+        engine.quit()
+
+    return {
+        "white": white_name,
+        "black": black_name,
+        "user_color": "white" if user_color == chess.WHITE else "black",
+        "result": game.headers.get("Result", "?"),
+        "start_fen": start_fen,
+        "moves": evals,
+    }
+
+
 def analyze(pgn_str: str, username: str, sf_path: str, time_per_move: float) -> None:
     game = chess.pgn.read_game(io.StringIO(pgn_str))
     if not game:
@@ -68,8 +142,7 @@ def analyze(pgn_str: str, username: str, sf_path: str, time_per_move: float) -> 
 
     white_name = game.headers.get("White", "?")
     black_name = game.headers.get("Black", "?")
-    user_color = chess.WHITE if white_name.lower() == username.lower() else chess.BLACK
-    user_side = "White" if user_color == chess.WHITE else "Black"
+    user_side = "White" if white_name.lower() == username.lower() else "Black"
 
     print(f"\n{'═' * 54}")
     print(f"  GAME ANALYSIS")
@@ -79,65 +152,12 @@ def analyze(pgn_str: str, username: str, sf_path: str, time_per_move: float) -> 
     print(f"  Eval: positive = White is better\n")
     print(f"  Analyzing... ({time_per_move}s per move)\n")
 
-    engine = chess.engine.SimpleEngine.popen_uci(sf_path)
-
-    board = game.board()
-    moves = list(game.mainline_moves())
-
-    blunders, mistakes, inaccuracies = [], [], []
-    good_moves = 0
-
-    for i, move in enumerate(moves):
-        turn = board.turn
-        move_num = i // 2 + 1
-        is_user = turn == user_color
-
-        if not is_user:
-            board.push(move)
-            continue
-
-        # Evaluate the position before the user's move (best achievable score)
-        info_before = engine.analyse(board, chess.engine.Limit(time=time_per_move))
-        s1 = info_before["score"].white().score(mate_score=10000)
-        pv = info_before.get("pv", [])
-        best_san = board.san(pv[0]) if pv else "?"
-        actual_san = board.san(move)
-
-        board.push(move)
-
-        # Evaluate the position after the user's move
-        info_after = engine.analyse(board, chess.engine.Limit(time=time_per_move))
-        s2 = info_after["score"].white().score(mate_score=10000)
-
-        # cp_loss from the user's perspective (positive = user lost advantage)
-        cp_loss = (s1 - s2) if turn == chess.WHITE else (s2 - s1)
-
-        label = classify(cp_loss)
-        move_label = (
-            f"{move_num}. {actual_san}"
-            if user_color == chess.WHITE
-            else f"{move_num}... {actual_san}"
-        )
-
-        entry = {
-            "label": move_label,
-            "actual": actual_san,
-            "best": best_san,
-            "cp_loss": cp_loss,
-            "s1": s1,
-            "s2": s2,
-        }
-
-        if label == "blunder":
-            blunders.append(entry)
-        elif label == "mistake":
-            mistakes.append(entry)
-        elif label == "inaccuracy":
-            inaccuracies.append(entry)
-        else:
-            good_moves += 1
-
-    engine.quit()
+    result = analyze_game(pgn_str, username, sf_path, time_per_move)
+    user_moves = [m for m in result["moves"] if m["is_user"]]
+    blunders = [m for m in user_moves if m["classification"] == "blunder"]
+    mistakes = [m for m in user_moves if m["classification"] == "mistake"]
+    inaccuracies = [m for m in user_moves if m["classification"] == "inaccuracy"]
+    good_moves = sum(1 for m in user_moves if m["classification"] is None)
 
     # ── Print results ────────────────────────────────────────
 

@@ -42,6 +42,16 @@ python3 -m src.opening_analysis "Bishops Opening Berlin Defense" --color black
 python3 -m src.opening_analysis "Petrovs Defense" --depth 12
 ```
 
+### GUI
+A local web app for visualizing everything above: an overview dashboard (rating trend, results by time control and color, how games end, top openings), a game browser with Stockfish analysis (interactive board, evaluation graph, your blunders/mistakes/inaccuracies with the engine's best move drawn as an arrow), and an interactive opening tree explorer.
+
+```bash
+python3 -m src.gui.server              # opens http://127.0.0.1:5050
+python3 -m src.gui.server --port 8000 --no-browser
+```
+
+Use ←/→ (and Home/End) to step through an analyzed game. Clicking an opening on the overview opens its move tree.
+
 ### Documentation
 - `docs/chess_notation_guide.md` — visual guide to reading chess notation, with ASCII board diagrams
 - `docs/openings_guide.md` — overview of 13 common openings drawn from real game history, all positions machine-verified
@@ -149,6 +159,7 @@ python3 -m src.opening_analysis "Petrovs Defense" --depth 12
 pip install -r requirements.txt
 python3 -m src.importer       # download your games
 python3 -m src.stats          # view your stats
+python3 -m src.gui.server     # or explore everything in the browser
 ```
 
 Change `USERNAME = "mattydem"` in `src/importer.py` and `src/stats.py` to use your own chess.com username.

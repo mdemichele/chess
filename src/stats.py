@@ -140,6 +140,53 @@ def rating_trend(games: list[dict]) -> None:
               f"{max(ratings):>6}  {min(ratings):>6}  {len(ratings):>6}")
 
 
+def record(games: list[dict]) -> dict:
+    counts = {"win": 0, "loss": 0, "draw": 0}
+    for g in games:
+        counts[classify_result(g)] += 1
+    total = sum(counts.values())
+    counts["total"] = total
+    counts["score"] = (counts["win"] + counts["draw"] * 0.5) / total * 100 if total else 0
+    return counts
+
+
+def opening_records(games: list[dict], n: int = 10) -> list[dict]:
+    by_name: dict[str, list[dict]] = defaultdict(list)
+    for g in games:
+        by_name[opening_name(g)].append(g)
+    ranked = sorted(by_name.items(), key=lambda x: len(x[1]), reverse=True)[:n]
+    return [{"name": name, **record(gs)} for name, gs in ranked]
+
+
+def compute_stats(games: list[dict]) -> dict:
+    """Same summary as main() prints, as plain data."""
+    term_counts: dict[str, int] = defaultdict(int)
+    for g in games:
+        term_counts[termination(g)] += 1
+
+    by_month: dict[str, list[int]] = defaultdict(list)
+    for g in games:
+        r = my_rating(g)
+        if r:
+            by_month[game_end_month(g)].append(r)
+
+    return {
+        "overall": record(games),
+        "by_time_class": {
+            tc: record(tc_games)
+            for tc in ("bullet", "blitz", "rapid", "daily")
+            if (tc_games := [g for g in games if g.get("time_class") == tc])
+        },
+        "by_color": {c: record([g for g in games if my_side(g) == c]) for c in ("white", "black")},
+        "terminations": sorted(term_counts.items(), key=lambda x: x[1], reverse=True),
+        "openings": {c: opening_records([g for g in games if my_side(g) == c]) for c in ("white", "black")},
+        "rating_trend": [
+            {"month": m, "avg": round(sum(rs) / len(rs)), "peak": max(rs), "low": min(rs), "games": len(rs)}
+            for m, rs in sorted(by_month.items())
+        ],
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="Chess stats summary for mattydem")
     parser.add_argument("--time-class", choices=["bullet", "blitz", "rapid", "daily"],

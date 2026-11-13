@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chess Analysis</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>♞ Chess Analysis <span id="username" class="muted"></span></h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="games">Games</button>
+      <button class="tab" data-tab="openings">Openings</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ── Overview ─────────────────────────────────────── -->
+    <section id="tab-overview" class="panel active">
+      <div class="filters">
+        <label>Time control
+          <select id="ov-time-class">
+            <option value="">All</option>
+            <option value="bullet">Bullet</option>
+            <option value="blitz">Blitz</option>
+            <option value="rapid">Rapid</option>
+            <option value="daily">Daily</option>
+          </select>
+        </label>
+        <label>Since <input id="ov-since" type="month"></label>
+      </div>
+
+      <div id="ov-tiles" class="tiles"></div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Rating trend</h2>
+          <div class="legend">
+            <span><i class="swatch line"></i>Monthly average</span>
+            <span><i class="swatch band"></i>Monthly low–peak</span>
+          </div>
+        </div>
+        <div id="ov-rating" class="chart"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <h2>Results</h2>
+            <div class="legend">
+              <span><i class="swatch win"></i>Win</span>
+              <span><i class="swatch draw"></i>Draw</span>
+              <span><i class="swatch loss"></i>Loss</span>
+            </div>
+          </div>
+          <div id="ov-results"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>How games end</h2></div>
+          <div id="ov-terminations"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Top openings as White</h2></div>
+          <div id="ov-open-white"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Top openings as Black</h2></div>
+          <div id="ov-open-black"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Games ────────────────────────────────────────── -->
+    <section id="tab-games" class="panel">
+      <div id="games-list-view">
+        <div class="filters">
+          <label>Search <input id="gm-q" type="search" placeholder="Opponent or opening"></label>
+          <label>Result
+            <select id="gm-result">
+              <option value="">All</option>
+              <option value="win">Wins</option>
+              <option value="loss">Losses</option>
+              <option value="draw">Draws</option>
+            </select>
+          </label>
+          <label>Time control
+            <select id="gm-time-class">
+              <option value="">All</option>
+              <option value="bullet">Bullet</option>
+              <option value="blitz">Blitz</option>
+              <option value="rapid">Rapid</option>
+              <option value="daily">Daily</option>
+            </select>
+          </label>
+          <span id="gm-count" class="muted"></span>
+        </div>
+        <div class="card table-wrap">
+          <table class="data">
+            <thead>
+              <tr><th>Date</th><th>Result</th><th>Color</th><th>Opponent</th><th>Opening</th><th>Type</th><th>Ended by</th><th></th></tr>
+            </thead>
+            <tbody id="gm-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="game-view" hidden>
+        <div class="filters">
+          <button id="gv-back" class="btn">← All games</button>
+          <label>Engine time / move
+            <select id="gv-time">
+              <option value="0.1">0.1s (fast)</option>
+              <option value="0.5">0.5s</option>
+              <option value="1">1s (strong)</option>
+            </select>
+          </label>
+          <label class="check"><input id="gv-arrow" type="checkbox" checked> Show best-move arrow</label>
+          <a id="gv-link" class="muted" target="_blank" rel="noopener">View on chess.com ↗</a>
+        </div>
+        <div id="gv-status" class="status"></div>
+        <div id="gv-content" hidden>
+          <h2 id="gv-title" class="game-title"></h2>
+          <div id="gv-tiles" class="tiles"></div>
+          <div class="game-layout">
+            <div class="board-col">
+              <img id="gv-board" class="board" alt="Board position">
+              <div class="board-nav">
+                <button class="btn" data-nav="start" title="Start (Home)">⏮</button>
+                <button class="btn" data-nav="prev" title="Previous (←)">◀</button>
+                <button class="btn" data-nav="next" title="Next (→)">▶</button>
+                <button class="btn" data-nav="end" title="End (End)">⏭</button>
+              </div>
+              <div id="gv-move-info" class="move-info"></div>
+            </div>
+            <div class="side-col">
+              <div class="card">
+                <div class="card-head">
+                  <h2>Evaluation</h2>
+                  <div class="legend">
+                    <span><i class="sev inaccuracy">?!</i>Inaccuracy</span>
+                    <span><i class="sev mistake">?</i>Mistake</span>
+                    <span><i class="sev blunder">??</i>Blunder</span>
+                  </div>
+                </div>
+                <div id="gv-eval" class="chart"></div>
+                <p class="muted small">Above the line = White is better. Your errors are marked; click the chart to jump to a move.</p>
+              </div>
+              <div class="card">
+                <div class="card-head"><h2>Your errors</h2></div>
+                <div id="gv-errors"></div>
+              </div>
+              <div class="card">
+                <div class="card-head"><h2>Moves</h2></div>
+                <div id="gv-moves" class="moves"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Openings ─────────────────────────────────────── -->
+    <section id="tab-openings" class="panel">
+      <div class="filters">
+        <label>Opening
+          <input id="op-name" list="op-names" placeholder="e.g. Italian Game" value="Italian Game">
+          <datalist id="op-names"></datalist>
+        </label>
+        <label>As
+          <select id="op-color">
+            <option value="white">White</option>
+            <option value="">Either color</option>
+            <option value="black">Black</option>
+          </select>
+        </label>
+        <label>Depth (ply) <input id="op-depth" type="number" min="1" max="30" value="10"></label>
+        <label>Min games <input id="op-min" type="number" min="1" value="5"></label>
+        <button id="op-go" class="btn primary">Build tree</button>
+      </div>
+      <div id="op-status" class="status"></div>
+      <div class="game-layout" id="op-content" hidden>
+        <div class="board-col">
+          <img id="op-board" class="board" alt="Opening position">
+          <div id="op-line" class="move-info"></div>
+        </div>
+        <div class="side-col">
+          <div class="card">
+            <div class="card-head">
+              <h2 id="op-title">Move tree</h2>
+              <div class="legend">
+                <span><i class="swatch win"></i>Win</span>
+                <span><i class="swatch draw"></i>Draw</span>
+                <span><i class="swatch loss"></i>Loss</span>
+              </div>
+            </div>
+            <p class="muted small">Click a move to see the position. Branches you score below 45% after are flagged ⚠.</p>
+            <div id="op-tree" class="tree"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="tooltip" class="tooltip" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

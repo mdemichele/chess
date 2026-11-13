@@ -116,6 +116,22 @@ def print_tree(node: dict, depth: int, max_depth: int, min_games: int,
                    prefix + extension, connector + move_label)
 
 
+def tree_to_dict(node: dict, depth: int, max_depth: int, min_games: int, path: list[str]) -> dict:
+    """Prunes the tree like print_tree does and adds score/path info for each node."""
+    children = []
+    if depth < max_depth:
+        ranked = sorted(node["children"].items(), key=lambda x: total_games(x[1]), reverse=True)
+        for move, child in ranked:
+            if total_games(child) >= min_games:
+                children.append({"move": move,
+                                 **tree_to_dict(child, depth + 1, max_depth, min_games, path + [move])})
+    return {
+        "win": node["win"], "loss": node["loss"], "draw": node["draw"],
+        "games": total_games(node), "score": score_pct(node),
+        "path": path, "children": children,
+    }
+
+
 def score_bar(pct: float) -> str:
     filled = round(pct / 10)
     return f"[{'█' * filled}{'░' * (10 - filled)}]"
