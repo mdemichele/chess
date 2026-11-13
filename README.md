@@ -1,8 +1,21 @@
 # Chess Improvement Tool
 
-A personal chess analysis tool that imports your chess.com game history and helps you understand your strengths, weaknesses, and opening patterns.
+A personal chess analysis tool that imports your chess.com game history and helps you understand your strengths, weaknesses, and opening patterns. Everything can be run from the command line or explored visually in a local web GUI.
 
 ## What's Been Built
+
+### GUI
+A local web app for visualizing everything below. Start it with:
+
+```bash
+python3 -m src.gui.server              # opens http://127.0.0.1:5050
+python3 -m src.gui.server --port 8000 --no-browser
+```
+
+- **Overview** — rating trend chart, results by time control and color, how games end, and your top openings as White and Black. Filter by time control and start month.
+- **Games** — search and filter your games, then click one to analyze it with Stockfish: an interactive board, an evaluation graph with your errors marked, and a list of your blunders, mistakes, and inaccuracies with the engine's best move drawn as an arrow. Use ←/→ (and Home/End) to step through moves.
+- **Openings** — an interactive move tree for any opening with per-branch win/draw/loss results. Branches where you score below 45% are flagged. Clicking an opening on the Overview opens its tree.
+- **↻ Refresh data** — downloads your newest games from chess.com (same as `importer --latest`) and updates every view.
 
 ### Game Importer
 Downloads your full chess.com game history via the public API and saves it locally as JSON.
@@ -14,6 +27,8 @@ python3 -m src.importer --month 2025-06   # one month only
 python3 -m src.importer --force           # re-download everything
 python3 -m src.importer --latest          # update to your newest games
 ```
+
+To keep your data current, use `--latest`: it re-downloads your most recent saved month (which may have been saved mid-month) and fetches every month after it. A plain import skips months that are already saved.
 
 ### Stats Analyzer
 Summarizes your record by time control, color, opening, and how games end. Includes a month-by-month rating trend.
@@ -43,16 +58,6 @@ python3 -m src.opening_analysis "Bishops Opening Berlin Defense" --color black
 python3 -m src.opening_analysis "Petrovs Defense" --depth 12
 ```
 
-### GUI
-A local web app for visualizing everything above: an overview dashboard (rating trend, results by time control and color, how games end, top openings), a game browser with Stockfish analysis (interactive board, evaluation graph, your blunders/mistakes/inaccuracies with the engine's best move drawn as an arrow), and an interactive opening tree explorer.
-
-```bash
-python3 -m src.gui.server              # opens http://127.0.0.1:5050
-python3 -m src.gui.server --port 8000 --no-browser
-```
-
-Click **↻ Refresh data** in the top bar to download your newest games from chess.com (same as `--latest`). Use ←/→ (and Home/End) to step through an analyzed game. Clicking an opening on the overview opens its move tree.
-
 ### Documentation
 - `docs/chess_notation_guide.md` — visual guide to reading chess notation, with ASCII board diagrams
 - `docs/openings_guide.md` — overview of 13 common openings drawn from real game history, all positions machine-verified
@@ -72,32 +77,32 @@ Click **↻ Refresh data** in the top bar to download your newest games from che
   OVERALL RECORD
 ──────────────────────────────────────────────────
 
-  1992W / 1979L / 211D  (50.2% score, 4182 games)
+  2400W / 2377L / 243D  (50.2% score, 5020 games)
 
 ──────────────────────────────────────────────────
   BY TIME CONTROL
 ──────────────────────────────────────────────────
 
   Blitz     4W / 7L / 1D  (37.5% score, 12 games)
-  Rapid     1976W / 1958L / 209D  (50.2% score, 4143 games)
-  Daily     12W / 14L / 1D  (46.3% score, 27 games)
+  Rapid     2380W / 2356L / 241D  (50.2% score, 4977 games)
+  Daily     16W / 14L / 1D  (53.2% score, 31 games)
 
 ──────────────────────────────────────────────────
   BY COLOR
 ──────────────────────────────────────────────────
 
-  White     1045W / 941L / 104D  (52.5% score, 2090 games)
-  Black     947W / 1038L / 107D  (47.8% score, 2092 games)
+  White     1264W / 1122L / 122D  (52.8% score, 2508 games)
+  Black     1136W / 1255L / 121D  (47.6% score, 2512 games)
 
 ──────────────────────────────────────────────────
   HOW GAMES END
 ──────────────────────────────────────────────────
 
-  resignation            2437  (58.3%)
-  checkmate              1028  (24.6%)
-  abandoned               357  (8.5%)
-  stalemate                90  (2.2%)
-  repetition               52  (1.2%)
+  resignation            2923  (58.2%)
+  checkmate              1210  (24.1%)
+  abandoned               464  (9.2%)
+  stalemate                99  (2.0%)
+  repetition               62  (1.2%)
 
 ──────────────────────────────────────────────────
   TOP OPENINGS AS WHITE
@@ -105,16 +110,16 @@ Click **↻ Refresh data** in the top bar to download your newest games from che
 
   Opening                                   Games    Win%
   ────────────────────────────────────────  ──────  ──────
-  Kings Pawn Opening Kings                    143   54.2%
-  Queens Pawn Opening Chigorin                107   54.2%
-  Philidor Defense 3.Bc4                       89   60.1%
-  Scandinavian Defense Mieses Kotrc            76   49.3%
-  Queens Pawn Opening Accelerated              76   57.9%
-  Giuoco Piano Game Giuoco                     66   53.0%
-  Italian Game                                 59   44.9%
-  French Defense Knight Variation              55   62.7%
-  Italian Game Two Knights                     51   56.9%
-  Scandinavian Defense                         48   47.9%
+  Kings Pawn Opening Kings                    154   56.2%
+  Giuoco Piano Game Giuoco                    119   57.1%
+  Queens Pawn Opening Chigorin                117   53.0%
+  Scandinavian Defense Mieses Kotrc           109   51.4%
+  Philidor Defense 3.Bc4                      104   61.1%
+  Italian Game Two Knights                     89   51.1%
+  Italian Game                                 83   51.8%
+  Queens Pawn Opening Accelerated              79   58.2%
+  French Defense Knight Variation              64   60.2%
+  Scandinavian Defense                         54   49.1%
 
 ──────────────────────────────────────────────────
   TOP OPENINGS AS BLACK
@@ -122,16 +127,16 @@ Click **↻ Refresh data** in the top bar to download your newest games from che
 
   Opening                                   Games    Win%
   ────────────────────────────────────────  ──────  ──────
-  Kings Pawn Opening 1...e5                   186   55.1%
-  Petrovs Defense Three Knights               162   54.0%
-  Petrovs Defense Classical Variation          99   52.0%
-  Bishops Opening Berlin Defense               95   40.0%
-  Petrovs Defense                              84   54.2%
-  Kings Pawn Opening Leonardis                 66   45.5%
-  Center Game                                  63   44.4%
-  Italian Game                                 61   41.0%
-  Kings Pawn Opening Kings                     58   40.5%
-  Queens Pawn Opening Zukertort                56   41.1%
+  Petrovs Defense Three Knights               222   53.6%
+  Kings Pawn Opening 1...e5                   213   52.1%
+  Petrovs Defense Classical Variation         148   49.0%
+  Bishops Opening Berlin Defense              127   38.6%
+  Petrovs Defense                             110   50.5%
+  Kings Pawn Opening Leonardis                 91   50.5%
+  Center Game                                  70   45.7%
+  Queens Pawn Opening Zukertort                68   38.2%
+  Italian Game                                 63   39.7%
+  Queens Pawn Opening 1...d5                   62   43.5%
 
 ──────────────────────────────────────────────────
   RATING TREND
@@ -147,14 +152,16 @@ Click **↻ Refresh data** in the top bar to download your newest games from che
   2025-09              895    1158     827     235
   2025-12              995    1133     920     187
   2026-03             1010    1062     907     123
-  2026-06              961    1029     893      76
+  2026-06              977    1032     893     164
+  2026-09              965    1228     857     185
+  2026-11              971    1021     942      62
 ```
 
 ---
 
 ## Getting Started
 
-**Requirements:** Python 3.10+
+**Requirements:** Python 3.10+, and [Stockfish](https://stockfishchess.org/) for game analysis (`brew install stockfish`)
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -163,13 +170,17 @@ python3 -m src.stats          # view your stats
 python3 -m src.gui.server     # or explore everything in the browser
 ```
 
-Change `USERNAME = "mattydem"` in `src/importer.py` and `src/stats.py` to use your own chess.com username.
+To use your own chess.com username, change `USERNAME = "mattydem"` in `src/importer.py`, `src/stats.py`, `src/analyzer.py`, and `src/opening_analysis.py`.
+
+Run all commands from the repository root. If `pip` gives errors, use `python3 -m pip` so packages install into the same Python that runs the tool.
 
 ---
 
 ## Roadmap
 
 - [x] Stockfish integration for blunder/mistake detection
+- [x] Web GUI for visualizing stats, game analysis, and opening trees
+- [x] One-click refresh of the newest chess.com games
 - [ ] Tactical pattern recognition
 - [ ] Endgame training modules
 - [ ] Opening repertoire builder
