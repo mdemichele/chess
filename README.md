@@ -156,7 +156,7 @@ Use ←/→ (and Home/End) to step through an analyzed game. Clicking an opening
 **Requirements:** Python 3.10+
 
 ```bash
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 python3 -m src.importer       # download your games
 python3 -m src.stats          # view your stats
 python3 -m src.gui.server     # or explore everything in the browser
