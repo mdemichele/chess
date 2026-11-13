@@ -12,6 +12,7 @@ python3 -m src.importer          # import all games
 python3 -m src.importer --since 2025-01   # from a specific month
 python3 -m src.importer --month 2025-06   # one month only
 python3 -m src.importer --force           # re-download everything
+python3 -m src.importer --latest          # update to your newest games
 ```
 
 ### Stats Analyzer
@@ -50,7 +51,7 @@ python3 -m src.gui.server              # opens http://127.0.0.1:5050
 python3 -m src.gui.server --port 8000 --no-browser
 ```
 
-Use ←/→ (and Home/End) to step through an analyzed game. Clicking an opening on the overview opens its move tree.
+Click **↻ Refresh data** in the top bar to download your newest games from chess.com (same as `--latest`). Use ←/→ (and Home/End) to step through an analyzed game. Clicking an opening on the overview opens its move tree.
 
 ### Documentation
 - `docs/chess_notation_guide.md` — visual guide to reading chess notation, with ASCII board diagrams

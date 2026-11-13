@@ -84,6 +84,11 @@ a { color: var(--accent); }
   position: sticky; top: 0; z-index: 5;
 }
 .tabs { display: flex; gap: 4px; }
+.data-status { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.small-text { font-size: 12px; }
+.small-text.ok { color: var(--text-2); }
+.small-text.error { color: var(--blunder); }
+.btn:disabled { opacity: 0.6; cursor: default; }
 .tab {
   border: 0; background: none; color: var(--text-2); font: inherit; padding: 6px 12px;
   border-radius: 6px; cursor: pointer;

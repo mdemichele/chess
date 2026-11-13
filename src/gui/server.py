@@ -8,15 +8,17 @@ Usage:
 
 import argparse
 import shutil
+import threading
 import webbrowser
 from datetime import datetime, timezone
 from pathlib import Path
 
 import chess
 import chess.svg
+import requests
 from flask import Flask, jsonify, request, send_from_directory, Response
 
-from src import stats, opening_analysis
+from src import stats, opening_analysis, importer
 from src.analyzer import analyze_game, DEFAULT_TIME, BLUNDER_CP, MISTAKE_CP, INACCURACY_CP
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -25,6 +27,7 @@ app = Flask(__name__, static_folder=None)
 
 _games_cache: dict = {"key": None, "games": []}
 _analysis_cache: dict[tuple[str, float], dict] = {}
+_refresh_lock = threading.Lock()
 
 
 def all_games() -> list[dict]:
@@ -80,6 +83,34 @@ def static_files(name):
 def api_stats():
     games = filtered_games()
     return jsonify({"username": stats.USERNAME, **stats.compute_stats(games)})
+
+
+def data_status() -> dict:
+    games = all_games()
+    last = max((g.get("end_time") or 0 for g in games), default=0)
+    return {
+        "total_games": len(games),
+        "last_game": datetime.fromtimestamp(last, tz=timezone.utc).strftime("%Y-%m-%d") if last else None,
+    }
+
+
+@app.get("/api/data_status")
+def api_data_status():
+    return jsonify(data_status())
+
+
+@app.post("/api/refresh")
+def api_refresh():
+    """Downloads the newest games from chess.com into data/games."""
+    if not _refresh_lock.acquire(blocking=False):
+        return jsonify({"error": "A refresh is already running."}), 409
+    try:
+        result = importer.refresh_latest()
+    except requests.RequestException as e:
+        return jsonify({"error": f"Could not reach chess.com: {e}"}), 502
+    finally:
+        _refresh_lock.release()
+    return jsonify({**result, **data_status()})
 
 
 @app.get("/api/games")

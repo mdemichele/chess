@@ -5,6 +5,7 @@ Usage:
     python -m src.importer                  # import all games
     python -m src.importer --since 2025-01  # import from a specific month onward
     python -m src.importer --month 2025-06  # import a single month
+    python -m src.importer --latest         # update to the newest games
 """
 
 import json
@@ -76,12 +77,45 @@ def import_all(since: str | None = None, only_month: str | None = None, force: b
     print(f"\nDone. {total} new games imported.")
 
 
+def refresh_latest() -> dict:
+    """
+    Brings local data up to date: re-downloads the most recently saved month
+    (it may have been saved mid-month) and downloads every month after it.
+    """
+    archives = get_game_archives(USERNAME)
+    saved = sorted(p.stem for p in DATA_DIR.glob("*.json"))
+    latest_saved = saved[-1] if saved else None
+
+    new_games = 0
+    months = []
+    for url in archives:
+        month = archive_url_to_month(url)
+        if latest_saved and month < latest_saved:
+            continue
+        before = len(load_existing(month))
+        games = get_games_for_month(url)
+        save_games(month, games)
+        new_games += max(0, len(games) - before)
+        months.append(month)
+        print(f"  {month}: saved {len(games)} games ({len(games) - before:+d})")
+
+    return {"months": months, "new_games": new_games}
+
+
 def main():
     parser = argparse.ArgumentParser(description="Import chess.com games for mattydem")
     parser.add_argument("--since", metavar="YYYY-MM", help="Import games from this month onward")
     parser.add_argument("--month", metavar="YYYY-MM", help="Import only this specific month")
     parser.add_argument("--force", action="store_true", help="Re-download even if already saved")
+    parser.add_argument("--latest", action="store_true",
+                        help="Update the most recent saved month and fetch any newer months")
     args = parser.parse_args()
+
+    if args.latest:
+        print(f"Refreshing latest games for {USERNAME}...")
+        result = refresh_latest()
+        print(f"\nDone. {result['new_games']} new games imported.")
+        return
 
     import_all(since=args.since, only_month=args.month, force=args.force)
 

@@ -64,6 +64,39 @@ function showTab(name) {
 }
 document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab)));
 
+// ── Data refresh ─────────────────────────────────────────
+function setDataStatus(text, cls = "") {
+  const el = $("#data-status");
+  el.textContent = text;
+  el.className = `small-text ${cls || "muted"}`;
+}
+
+async function loadDataStatus() {
+  const d = await api("/api/data_status");
+  setDataStatus(d.last_game ? `${d.total_games.toLocaleString()} games · latest ${d.last_game}` : "No games yet");
+}
+
+$("#refresh-btn").addEventListener("click", async () => {
+  const btn = $("#refresh-btn");
+  btn.disabled = true;
+  setDataStatus("Downloading from chess.com…");
+  try {
+    const res = await fetch("/api/refresh", { method: "POST" });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || res.statusText);
+    setDataStatus(`${d.new_games} new game${d.new_games === 1 ? "" : "s"} · latest ${d.last_game}`, "ok");
+    // Re-fetch whatever the user has already opened so it reflects the new data
+    const active = document.querySelector(".tab.active").dataset.tab;
+    for (const k of Object.keys(loaded)) delete loaded[k];
+    showTab(active);
+    if (active === "openings" && !$("#op-content").hidden) buildTree();
+  } catch (err) {
+    setDataStatus(`Refresh failed: ${err.message}`, "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 // ── Overview ─────────────────────────────────────────────
 async function loadOverview() {
   const since = $("#ov-since").value;
@@ -147,8 +180,10 @@ function drawRatingChart(container, trend) {
   }
   const every = Math.ceil(trend.length / 10);
   trend.forEach((d, i) => {
-    if (i % every === 0 || i === trend.length - 1)
-      svgEl("text", { x: x(i), y: H - 8, "text-anchor": "middle" }, svg).textContent = d.month;
+    // Always label the last month; skip a regular tick that would crowd into it
+    const last = trend.length - 1;
+    if (i === last || (i % every === 0 && last - i >= every / 2))
+      svgEl("text", { x: x(i), y: H - 8, "text-anchor": i === last && i > 0 ? "end" : i === 0 ? "start" : "middle" }, svg).textContent = d.month;
   });
 
   const band = trend.map((d, i) => `${x(i)},${y(d.peak)}`).join(" ") + " " +
@@ -477,3 +512,4 @@ $("#op-tree").addEventListener("click", (e) => {
 });
 
 showTab("overview");
+loadDataStatus();
