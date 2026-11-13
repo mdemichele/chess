@@ -12,6 +12,7 @@ python3 -m src.importer          # import all games
 python3 -m src.importer --since 2025-01   # from a specific month
 python3 -m src.importer --month 2025-06   # one month only
 python3 -m src.importer --force           # re-download everything
+python3 -m src.importer --latest          # update to your newest games
 ```
 
 ### Stats Analyzer
@@ -41,6 +42,16 @@ python3 -m src.opening_analysis "Italian Game"
 python3 -m src.opening_analysis "Bishops Opening Berlin Defense" --color black
 python3 -m src.opening_analysis "Petrovs Defense" --depth 12
 ```
+
+### GUI
+A local web app for visualizing everything above: an overview dashboard (rating trend, results by time control and color, how games end, top openings), a game browser with Stockfish analysis (interactive board, evaluation graph, your blunders/mistakes/inaccuracies with the engine's best move drawn as an arrow), and an interactive opening tree explorer.
+
+```bash
+python3 -m src.gui.server              # opens http://127.0.0.1:5050
+python3 -m src.gui.server --port 8000 --no-browser
+```
+
+Click **↻ Refresh data** in the top bar to download your newest games from chess.com (same as `--latest`). Use ←/→ (and Home/End) to step through an analyzed game. Clicking an opening on the overview opens its move tree.
 
 ### Documentation
 - `docs/chess_notation_guide.md` — visual guide to reading chess notation, with ASCII board diagrams
@@ -146,9 +157,10 @@ python3 -m src.opening_analysis "Petrovs Defense" --depth 12
 **Requirements:** Python 3.10+
 
 ```bash
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 python3 -m src.importer       # download your games
 python3 -m src.stats          # view your stats
+python3 -m src.gui.server     # or explore everything in the browser
 ```
 
 Change `USERNAME = "mattydem"` in `src/importer.py` and `src/stats.py` to use your own chess.com username.
